@@ -2,11 +2,8 @@ require 'rails_helper'
 
 RSpec.describe MoviesController, type: :controller do
   let(:tmdb_service) { instance_double(TmdbService) }
-  let(:user) { create(:user) }
 
   before do
-    # MoviesController doesn't require authentication based on routes
-    # But if it did, we'd use: sign_in user
     allow(TmdbService).to receive(:new).and_return(tmdb_service)
   end
 
