@@ -103,13 +103,17 @@ class MoviesController < ApplicationController
 
     # Filter by decade
     if @decade_filter.present?
-      filtered = filtered.select do |movie_data|
-        release_date = movie_data["release_date"]
-        next false unless release_date
-        year = Date.parse(release_date).year rescue nil
-        next false unless year
-        (year / 10) * 10 == @decade_filter
-      end
+        filtered = filtered.select do |movie_data|
+          release_date = movie_data["release_date"]
+          next false unless release_date
+          begin
+            year = Date.parse(release_date).year
+          rescue ArgumentError, TypeError
+            next false
+          end
+          next false unless year
+          (year / 10) * 10 == @decade_filter
+        end
     end
 
     filtered
@@ -124,7 +128,15 @@ class MoviesController < ApplicationController
     when "release_date"
       movies.sort_by do |m|
         release_date = m["release_date"]
-        release_date ? Date.parse(release_date) : Date.new(1900, 1, 1)
+        if release_date
+          begin
+            Date.parse(release_date)
+          rescue ArgumentError, TypeError
+            Date.new(1900, 1, 1)
+          end
+        else
+          Date.new(1900, 1, 1)
+        end
       end.reverse
     else
       movies

@@ -31,7 +31,12 @@ class TmdbService
         stale_cache = Rails.cache.read(cache_key)
         return stale_cache if stale_cache.present?
 
-        return { results: [], total_pages: 0, total_results: 0, error: "Rate limit exceeded. Please try again later." }
+        return {
+          results: [],
+          total_pages: 0,
+          total_results: 0,
+          error: "Rate limit exceeded. Please try again later."
+        }
       end
 
       if response.success?
@@ -41,7 +46,7 @@ class TmdbService
       else
         { results: [], total_pages: 0, total_results: 0, error: "API request failed" }
       end
-    rescue Faraday::TimeoutError, Faraday::ConnectionFailed => e
+    rescue Faraday::TimeoutError, Faraday::ConnectionFailed
       # Return cached results if available, even if expired
       stale_cache = Rails.cache.read(cache_key)
       return stale_cache if stale_cache.present?

@@ -8,11 +8,6 @@ RSpec.describe TmdbService, type: :service do
   before do
     allow(ENV).to receive(:fetch).with("TMDB_API_KEY", "").and_return(api_key)
     Rails.cache.clear
-    WebMock.disable_net_connect!(allow_localhost: true)
-  end
-
-  after do
-    WebMock.allow_net_connect!
   end
 
   describe "#search_movies" do
@@ -65,7 +60,7 @@ RSpec.describe TmdbService, type: :service do
         service.search_movies(query)
         service.search_movies(query)
 
-        expect(WebMock).to have_requested(:get, "#{base_url}/search/movie").once
+        expect(a_request(:get, "#{base_url}/search/movie")).to have_been_made.once
       end
     end
 
@@ -81,7 +76,7 @@ RSpec.describe TmdbService, type: :service do
       it "does not make API call" do
         service.search_movies("")
 
-        expect(WebMock).not_to have_requested(:get, /#{base_url}/)
+        expect(a_request(:get, /#{base_url}/)).not_to have_been_made
       end
     end
 
