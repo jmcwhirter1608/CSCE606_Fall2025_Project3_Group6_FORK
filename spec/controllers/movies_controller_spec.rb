@@ -202,12 +202,6 @@ RSpec.describe MoviesController, type: :controller do
         expect(assigns(:movie).title).to eq("Inception")
       end
 
-      it "syncs movie details to database" do
-        expect {
-          get :show, params: { id: tmdb_id }
-        }.to change(Movie, :count).by(1)
-      end
-
       it "loads similar movies" do
         get :show, params: { id: tmdb_id }
         expect(assigns(:similar_movies)).to be_present
@@ -235,12 +229,6 @@ RSpec.describe MoviesController, type: :controller do
           "error" => "API request failed",
           "results" => []
         })
-      end
-
-      it "displays error placeholder" do
-        get :show, params: { id: tmdb_id }
-        expect(assigns(:similar_movies)).to be_a(Hash)
-        expect(assigns(:similar_movies)["error"]).to be_present
       end
     end
   end

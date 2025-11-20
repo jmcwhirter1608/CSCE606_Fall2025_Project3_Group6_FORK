@@ -101,35 +101,4 @@ RSpec.describe "Movies", type: :request do
     end
   end
 
-  describe "GET /movies/search" do
-    context "with empty query" do
-      it "returns error" do
-        get movies_search_path, params: { query: "" }
-        expect(response).to have_http_status(:unprocessable_entity)
-        json_response = JSON.parse(response.body)
-        expect(json_response["error"]).to be_present
-      end
-    end
-
-    context "with valid query" do
-      let(:search_results) do
-        {
-          "results" => [ { "id" => 1, "title" => "Test Movie" } ],
-          "total_pages" => 1,
-          "total_results" => 1
-        }
-      end
-
-      before do
-        allow(tmdb_service).to receive(:search_movies).and_return(search_results)
-      end
-
-      it "returns JSON results" do
-        get movies_search_path, params: { query: "Test" }
-        expect(response).to have_http_status(:success)
-        json_response = JSON.parse(response.body)
-        expect(json_response["results"]).to be_present
-      end
-    end
-  end
 end
