@@ -53,7 +53,6 @@ class TmdbService
 
       { results: [], total_pages: 0, total_results: 0, error: "Connection error. Please try again later." }
     rescue StandardError => e
-      Rails.logger.error "TMDb API Error: #{e.message}"
       { results: [], total_pages: 0, total_results: 0, error: "An error occurred" }
     end
   end
@@ -80,7 +79,6 @@ class TmdbService
         nil
       end
     rescue StandardError => e
-      Rails.logger.error "TMDb API Error for movie #{tmdb_id}: #{e.message}"
       nil
     end
   end
@@ -108,7 +106,6 @@ class TmdbService
         { results: [], total_pages: 0, error: "API request failed" }
       end
     rescue StandardError => e
-      Rails.logger.error "TMDb API Error for similar movies #{tmdb_id}: #{e.message}"
       { results: [], total_pages: 0, error: "An error occurred" }
     end
   end
@@ -130,7 +127,6 @@ class TmdbService
         { genres: [] }
       end
     rescue StandardError => e
-      Rails.logger.error "TMDb API Error for genres: #{e.message}"
       { genres: [] }
     end
   end
@@ -144,7 +140,6 @@ class TmdbService
 
   def authorized_get(path, params: {}, log_context: nil)
     if @access_token.blank?
-      Rails.logger.error "[TMDB] Missing TMDB_ACCESS_TOKEN for request to #{path}"
       raise "TMDB_ACCESS_TOKEN is not configured"
     end
 
@@ -153,22 +148,11 @@ class TmdbService
       "Authorization" => "Bearer #{@access_token}",
       "Accept" => "application/json"
     }
-
-    Rails.logger.info(
-      "[TMDB] REQUEST GET #{url}" \
-      " params=#{params.inspect}" \
-      " headers=#{headers.inspect}" \
-      "#{" context=#{log_context}" if log_context.present?}"
-    )
-
+    
     response = @conn.get(path) do |req|
       headers.each { |k, v| req.headers[k] = v }
       params.each { |k, v| req.params[k] = v }
     end
-
-    Rails.logger.info(
-      "[TMDB] RESPONSE GET #{url} status=#{response.status} body=#{response.body.inspect}"
-    )
 
     response
   end
