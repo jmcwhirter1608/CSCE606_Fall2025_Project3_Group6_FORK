@@ -144,8 +144,9 @@
         <% else %>
           <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
             <% @similar_movies.each do |movie| %>
-              <div class="group cursor-pointer" onclick="window.location.href='<%= movie_path(movie['id']) %>'">
-                <div class="relative overflow-hidden rounded-lg bg-cinematico-dark border border-cinematico-grey hover:border-cinematico-gold transition-all duration-300">
+              <div class="group relative">
+                <%= link_to movie_path(movie['id']), class: 'block' do %>
+                  <div class="relative overflow-hidden rounded-lg bg-cinematico-dark border border-cinematico-grey hover:border-cinematico-gold transition-all duration-300">
                   <% if movie["poster_path"] %>
                     <%= image_tag TmdbService.poster_url(movie["poster_path"]), 
                         alt: movie["title"], 
@@ -169,6 +170,17 @@
                       </p>
                     <% end %>
                   </div>
+                  <% end %>
+                  </div>
+                <% end %>
+                <% if user_signed_in? %>
+                  <div class="absolute top-2 right-2">
+                    <%= form_with url: watchlist_items_path, method: :post, local: true do |f| %>
+                      <%= hidden_field_tag :movie_id, movie['id'] %>
+                      <%= f.submit "+", class: "w-8 h-8 rounded-full bg-cinematico-gold text-cinematico-black font-bold text-sm shadow-md hover:opacity-90" %>
+                    <% end %>
+                  </div>
+                <% end %>
                 </div>
               </div>
             <% end %>

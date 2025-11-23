@@ -9,6 +9,8 @@ class User < ApplicationRecord
   has_many :following_users, foreign_key: :followed_id, class_name: "Follow", dependent: :destroy
   has_many :followers, through: :following_users, source: :follower
 
+  has_one :watchlist, dependent: :destroy
+
   def admin?
     id == 1
   end
