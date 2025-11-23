@@ -7,13 +7,11 @@
         <%= link_to "Back to Search", movies_path, class: "mt-4 inline-block px-6 py-2 bg-cinematico-gold text-cinematico-black font-semibold rounded-lg hover:bg-opacity-90 transition" %>
       </div>
     <% elsif @movie %>
-      <!-- Movie Header -->
       <div class="mb-8">
         <%= link_to "← Back to Search", movies_path, class: "text-cinematico-gold hover:underline mb-4 inline-block" %>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-        <!-- Poster -->
         <div class="md:col-span-1">
           <% if @movie.poster_path %>
             <%= image_tag @movie.poster_url, 
@@ -27,7 +25,6 @@
           <% end %>
         </div>
 
-        <!-- Movie Info -->
         <div class="md:col-span-2">
           <h1 class="font-cinzel text-4xl text-cinematico-gold mb-4"><%= @movie.title %></h1>
           
@@ -58,7 +55,6 @@
             </div>
           <% end %>
 
-          <!-- Cast -->
           <% if @movie.movie_people.where(role: "cast").any? %>
             <div class="mb-6">
               <h2 class="font-semibold text-xl mb-3">Cast</h2>
@@ -81,7 +77,6 @@
             </div>
           <% end %>
 
-          <!-- Directors -->
           <% directors = @movie.movie_people.where(role: "director") %>
           <% if directors.any? %>
             <div>
@@ -96,7 +91,45 @@
         </div>
       </div>
 
-      <!-- Similar Movies Section -->
+      <div class="mt-12 mb-12 border-t border-gray-800 pt-8">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+          <h2 class="font-cinzel text-3xl text-cinematico-gold">Reviews</h2>
+          
+          <div class="flex gap-4 text-sm mt-4 md:mt-0">
+            <%= link_to "Top Rated", movie_path(@movie, sort: 'top'), class: "px-4 py-2 rounded border #{params[:sort] != 'newest' ? 'border-cinematico-gold text-cinematico-gold bg-cinematico-gold/10' : 'border-gray-700 text-cinematico-grey hover:border-cinematico-gold transition'}" %>
+            <%= link_to "Newest", movie_path(@movie, sort: 'newest'), class: "px-4 py-2 rounded border #{params[:sort] == 'newest' ? 'border-cinematico-gold text-cinematico-gold bg-cinematico-gold/10' : 'border-gray-700 text-cinematico-grey hover:border-cinematico-gold transition'}" %>
+          </div>
+        </div>
+
+        <% if user_signed_in? %>
+          <div class="bg-cinematico-dark border border-gray-800 p-6 rounded-lg mb-10 shadow-lg">
+            <h3 class="text-xl font-cinzel text-cinematico-light mb-4">Leave a Review</h3>
+            <%= form_with(model: [@movie, @review], local: true, class: "space-y-4") do |f| %>
+              <div>
+                <%= f.label :rating, "Rating (1-10)", class: "block text-sm font-medium text-cinematico-grey mb-1" %>
+                <%= f.number_field :rating, in: 1..10, class: "w-full md:w-32 bg-cinematico-black border border-gray-700 rounded text-white focus:border-cinematico-gold focus:ring-1 focus:ring-cinematico-gold px-3 py-2" %>
+              </div>
+              <div>
+                <%= f.label :body, "Your Thoughts", class: "block text-sm font-medium text-cinematico-grey mb-1" %>
+                <%= f.text_area :body, rows: 3, placeholder: "What did you think of this movie?", class: "w-full bg-cinematico-black border border-gray-700 rounded text-white focus:border-cinematico-gold focus:ring-1 focus:ring-cinematico-gold px-3 py-2" %>
+              </div>
+              <%= f.submit "Post Review", class: "cursor-pointer px-6 py-2 bg-cinematico-gold text-cinematico-black font-bold rounded hover:bg-yellow-500 transition" %>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="bg-cinematico-dark border border-gray-800 p-6 rounded-lg mb-10 text-center">
+            <p class="text-cinematico-grey">Please <%= link_to "Sign In", new_user_session_path, class: "text-cinematico-gold hover:underline" %> to leave a review.</p>
+          </div>
+        <% end %>
+
+        <div class="space-y-6">
+          <% if @reviews.any? %>
+            <%= render @reviews %>
+          <% else %>
+            <p class="text-cinematico-grey italic text-center py-8">No reviews yet. Be the first to review!</p>
+          <% end %>
+        </div>
+      </div>
       <div class="mt-12">
         <h2 class="font-cinzel text-3xl text-cinematico-gold mb-6">Similar Movies</h2>
         
@@ -145,4 +178,3 @@
     <% end %>
   </div>
 </div>
-
