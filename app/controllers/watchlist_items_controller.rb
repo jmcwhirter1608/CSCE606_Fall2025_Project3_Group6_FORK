@@ -27,7 +27,7 @@ class WatchlistItemsController < ApplicationController
       if item.destroy
         # Provide an undo link that posts to the restore action
         undo_link = view_context.link_to('Undo', restore_watchlist_items_path(movie_id: movie.id), method: :post)
-        redirect_back fallback_location: watchlist_path, notice: "Removed from watchlist. #{undo_link}".html_safe
+        redirect_back fallback_location: watchlist_path, notice: "Removed from #{movie.title} watchlist. "
       else
         redirect_back fallback_location: watchlist_path, alert: 'Could not remove item.'
       end

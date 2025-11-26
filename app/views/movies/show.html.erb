@@ -29,7 +29,18 @@
 
         <!-- Movie Info -->
         <div class="md:col-span-2">
-          <h1 class="font-cinzel text-4xl text-cinematico-gold mb-4"><%= @movie.title %></h1>
+          <div class="flex items-center gap-4 mb-4">
+            <h1 class="font-cinzel text-4xl text-cinematico-gold"><%= @movie.title %></h1>
+
+            <% if user_signed_in? %>
+              <% watchlist_item = current_user.watchlist&.watchlist_items&.find_by(movie_id: @movie.id) %>
+              <% if watchlist_item %>
+                <%= button_to "Remove from watchlist", watchlist_item_path(watchlist_item), method: :delete, class: "ml-2 px-3 py-1 bg-red-600 text-white rounded hover:opacity-90 text-sm" %>
+              <% else %>
+                <%= button_to "Add to Watchlist", watchlist_items_path, params: { movie_id: @movie.id }, method: :post, class: "ml-2 px-3 py-1 bg-cinematico-gold text-cinematico-black rounded hover:opacity-90 text-sm" %>
+              <% end %>
+            <% end %>
+          </div>
           
           <div class="flex flex-wrap gap-4 mb-4 text-gray-300">
             <% if @movie.release_date %>

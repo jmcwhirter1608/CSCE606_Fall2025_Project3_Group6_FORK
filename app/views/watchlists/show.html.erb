@@ -7,7 +7,7 @@
         <% @items.each do |item| %>
           <% movie = item.movie %>
           <div class="group relative">
-            <%= link_to movie_path(movie.id), class: 'block' do %>
+            <%= link_to movie_path(movie.tmdb_id), class: 'block' do %>
               <div class="relative overflow-hidden rounded-lg bg-cinematico-dark border border-cinematico-grey hover:border-cinematico-gold transition-all duration-300">
                 <% if movie.poster_path %>
                   <%= image_tag movie.poster_url, alt: movie.title, class: "w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300" %>
@@ -27,7 +27,7 @@
             <% end %>
 
             <div class="absolute top-2 right-2">
-              <%= button_to "Remove", watchlist_item_path(item), method: :delete, form: { data: { turbo: false } }, class: "w-8 h-8 rounded-full bg-red-600 text-white font-bold text-sm shadow-md hover:opacity-90" %>
+              <%= button_to "x", watchlist_item_path(item), method: :delete, form: { data: { turbo: false } }, class: "w-8 h-8 rounded-full bg-red-600 text-white font-bold text-sm shadow-md hover:opacity-90" %>
             </div>
           </div>
         <% end %>
