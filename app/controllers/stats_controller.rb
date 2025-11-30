@@ -9,4 +9,3 @@ class StatsController < ApplicationController
     @heatmap_data = @stats_service.calculate_heatmap_data
   end
 end
-
