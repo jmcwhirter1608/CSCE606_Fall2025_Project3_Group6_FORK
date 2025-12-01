@@ -11,6 +11,8 @@ class User < ApplicationRecord
   has_many :logs, dependent: :destroy
   has_one :user_stat, dependent: :destroy
 
+  has_one :watchlist, dependent: :destroy
+  has_one :watch_history, dependent: :destroy
   validate :password_complexity
 
   validates :username,
