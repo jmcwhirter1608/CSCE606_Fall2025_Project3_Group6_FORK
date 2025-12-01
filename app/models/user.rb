@@ -9,6 +9,13 @@ class User < ApplicationRecord
   has_many :following_users, foreign_key: :followed_id, class_name: "Follow", dependent: :destroy
   has_many :followers, through: :following_users, source: :follower
 
+  # ==================================================
+  # NEW ASSOCIATIONS
+  # ==================================================
+  has_many :lists, dependent: :destroy
+  has_many :logs, dependent: :destroy
+  # ==================================================
+
   validate :password_complexity
 
   validates :username,
@@ -20,6 +27,12 @@ class User < ApplicationRecord
               message: "can only contain letters, numbers, and underscores"
             }
 
+  # ==================================================
+  # HELPER METHODS
+  # ==================================================
+  def following?(user)
+    followed_users.include?(user)
+  end
 
   private
 

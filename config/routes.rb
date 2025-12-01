@@ -26,5 +26,17 @@ Rails.application.routes.draw do
     end
   end
 
+  # ==================================================
+  # SOCIAL & COMMUNITY ROUTES
+  # ==================================================
+  resources :users, only: [:show] do
+    resource :follow, only: [:create, :destroy], controller: 'follows'
+  end
+
+  resources :lists do
+    resources :list_items, only: [:create, :destroy]
+  end
+  # ==================================================
+
   get "my_reviews", to: "reviews#my_reviews", as: :my_reviews
 end
