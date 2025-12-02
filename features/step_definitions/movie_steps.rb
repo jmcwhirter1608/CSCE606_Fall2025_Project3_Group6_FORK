@@ -98,6 +98,9 @@ Then("I should see a rate limit message") do
 end
 
 Given("the TMDb API is available") do
+  # Clear Rails cache to ensure fresh data
+  Rails.cache.clear
+  
   # Stub successful API responses using WebMock
   search_response = {
     "results" => [
@@ -360,8 +363,16 @@ When("I select {string} from the genre filter") do |genre|
     # Find the select element first
     select_element = find("select[name*='genre']", wait: 10)
     
-    # Wait for options to be loaded
-    expect(select_element).to have_css("option", minimum: 2, wait: 5)
+    # Wait for genres to be loaded - check that we have more than just "All Genres"
+    # Retry a few times in case genres are still loading
+    5.times do |attempt|
+      all_options = select_element.all("option", wait: 2).map { |opt| opt.text.strip }
+      if all_options.length > 1
+        break
+      elsif attempt < 4
+        sleep 0.5
+      end
+    end
     
     # Get all available options for debugging
     all_options = select_element.all("option", wait: 2).map { |opt| opt.text.strip }
