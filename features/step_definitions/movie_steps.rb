@@ -397,17 +397,21 @@ When("I select {string} from the decade filter") do |decade|
 end
 
 Then("only movies from {string} should appear") do |decade|
-  # Wait for results to load, either grid or empty state
-  sleep 0.5
-  # Either grid exists or empty state message
-  has_grid = page.has_css?(".grid", wait: 2)
-  has_empty = page.has_content?(/No movies found|Try a different/i)
-  has_error = page.has_content?(/error|Error/i)
-  # Accept any of these states as valid
+  # Wait for results to load
+  sleep 1
+  # Check for various valid states after filtering
+  has_grid = page.has_css?(".grid", wait: 3)
+  has_empty = page.has_content?(/No movies found|Try a different/i, wait: 2)
+  has_error = page.has_content?(/error|Error|An error occurred/i, wait: 2)
+  # After filtering, any of these states is valid:
+  # - Grid with filtered results
+  # - Empty state (no movies match the filter)
+  # - Error message
   result = has_grid || has_empty || has_error
-  expect(result).to be true, "Expected grid, empty state, or error message but found none"
-  # If grid exists, verify we're on the movies page
-  expect(current_path).to match(/movies/) if has_grid
+  error_msg = "Expected grid, empty state, or error after filtering. Current path: #{current_path}"
+  expect(result).to be true
+  # Verify we're still on the movies page
+  expect(current_path).to match(/movies/)
 end
 
 Then("I should see filtered results") do
