@@ -4,12 +4,13 @@ class StatsService
   end
 
   def calculate_overview
-    logs = @user.logs.includes(:movie)
+    logs = user_watch_logs.includes(:movie)
+    legacy_logs = user_logs
     {
       total_movies: logs.select(:movie_id).distinct.count,
       total_hours: calculate_total_hours(logs),
       total_reviews: @user.reviews.count,
-      total_rewatches: logs.where(rewatch: true).count,
+      total_rewatches: legacy_logs.where(rewatch: true).count,
       genre_breakdown: calculate_genre_breakdown(logs)
     }
   rescue StandardError => e
@@ -24,7 +25,7 @@ class StatsService
   end
 
   def calculate_top_contributors
-    logs = @user.logs.includes(movie: [ :genres, movie_people: :person ])
+    logs = user_watch_logs.includes(movie: [ :genres, movie_people: :person ])
     {
       top_genres: calculate_top_genres(logs),
       top_directors: calculate_top_directors(logs),
@@ -33,15 +34,16 @@ class StatsService
   end
 
   def calculate_trend_data
-    logs = @user.logs.where.not(watched_on: nil).order(watched_on: :asc)
+    logs = user_watch_logs.where.not(watched_on: nil).order(watched_on: :asc)
+    legacy_logs = user_logs.where.not(watched_on: nil).order(watched_on: :asc)
     {
       activity_trend: calculate_activity_trend(logs),
-      rating_trend: calculate_rating_trend(logs)
+      rating_trend: calculate_rating_trend(legacy_logs)
     }
   end
 
   def calculate_heatmap_data
-    logs = @user.logs.where.not(watched_on: nil)
+    logs = user_watch_logs.where.not(watched_on: nil)
     heatmap_hash = {}
 
     logs.each do |log|
@@ -65,6 +67,17 @@ class StatsService
   end
 
   private
+
+  def user_watch_logs
+    # Prefer the user's watch history; fall back to user_id for resilience
+    return WatchLog.none unless @user
+    @user.watch_history&.watch_logs || WatchLog.where(user_id: @user.id)
+  end
+
+  def user_logs
+    return Log.none unless @user
+    @user.logs
+  end
 
   def calculate_total_hours(logs)
     # Runtime is stored in minutes, return in minutes (will be converted to hours in view)

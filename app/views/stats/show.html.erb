@@ -296,8 +296,28 @@
         currentDate.setDate(currentDate.getDate() + 7);
       }
 
+      // Month header row to show month/year at top
+      const monthLabels = weeks.map(week => {
+        const firstOfMonth = week.find(day => day.date.getDate() === 1);
+        return firstOfMonth
+          ? `${firstOfMonth.date.toLocaleString('default', { month: 'short' })} ${firstOfMonth.date.getFullYear()}`
+          : "";
+      });
+
       // Create heatmap HTML
-      let html = '<div class="flex gap-1">';
+      let html = '<div class="flex flex-col gap-2">';
+
+      // Month labels row (spacer to align with day labels column)
+      html += '<div class="flex gap-1 items-end">';
+      html += '<div class="w-8"></div>';
+      html += '<div class="flex gap-1 overflow-x-auto">';
+      monthLabels.forEach(label => {
+        html += `<div class="w-4 text-[10px] text-gray-400 text-center leading-4">${label}</div>`;
+      });
+      html += '</div></div>';
+
+      // Day labels + cells
+      html += '<div class="flex gap-1">';
       html += '<div class="flex flex-col gap-1 mr-2">';
       ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
         html += `<div class="h-4 text-xs text-gray-400" style="line-height: 16px;">${day}</div>`;
@@ -339,4 +359,3 @@
     min-height: 150px;
   }
 </style>
-

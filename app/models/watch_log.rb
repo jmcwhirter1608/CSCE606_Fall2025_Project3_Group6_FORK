@@ -6,6 +6,8 @@ class WatchLog < ApplicationRecord
   validate :watched_on_cannot_be_in_future
 
   before_validation :assign_user_from_watch_history
+  after_create :sync_to_log
+  after_destroy :remove_synced_log
 
   def watched_on_cannot_be_in_future
     return if watched_on.blank?
@@ -20,5 +22,26 @@ class WatchLog < ApplicationRecord
     if self.user_id.blank? && self.watch_history.present?
       self.user_id = self.watch_history.user_id
     end
+  end
+
+  # Mirror watch history entries into the legacy logs table so stats
+  # can use rating/rewatch fields stored there.
+  def sync_to_log
+    return unless user_id && movie_id && watched_on
+
+    Log.find_or_create_by(user_id: user_id, movie_id: movie_id, watched_on: watched_on) do |log|
+      log.rewatch = false
+    end
+  rescue StandardError => e
+    Rails.logger.error("WatchLog#sync_to_log error: #{e.message}")
+  end
+
+  def remove_synced_log
+    return unless user_id && movie_id && watched_on
+
+    log = Log.find_by(user_id: user_id, movie_id: movie_id, watched_on: watched_on)
+    log&.destroy
+  rescue StandardError => e
+    Rails.logger.error("WatchLog#remove_synced_log error: #{e.message}")
   end
 end
