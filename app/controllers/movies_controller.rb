@@ -23,23 +23,8 @@ class MoviesController < ApplicationController
         @total_pages = 0
         @total_results = 0
       else
-        results = []
-        if search_results.is_a?(Hash)
-          results = search_results["results"] || search_results[:results] || []
-          @total_pages = search_results["total_pages"] || search_results[:total_pages] || 0
-          @total_results = search_results["total_results"] || search_results[:total_results] || 0
-        else
-          @total_pages = 0
-          @total_results = 0
-        end
-        @movies = results
-
-        # Apply filters
-        @movies = apply_filters(@movies)
-        # Apply sorting
-        @movies = apply_sorting(@movies)
-
-        # Sync movies to database
+        @movies, @has_next_page, @total_results = filtered_results(search_results)
+        @total_pages = @page + (@has_next_page ? 1 : 0)
         sync_movies_to_db(@movies)
       end
     else
@@ -47,6 +32,7 @@ class MoviesController < ApplicationController
       @total_pages = 0
       @total_results = 0
       @error = nil
+      load_discovery_content
     end
 
     # Get genres for filter dropdown
@@ -110,6 +96,62 @@ class MoviesController < ApplicationController
     @tmdb_service = TmdbService.new
   end
 
+  def load_discovery_content
+    @show_discovery = true
+    @recommendations = []
+    @trending_movies = []
+    @high_rated_unwatched = []
+    @recommendations_error = nil
+    @trending_error = nil
+    @high_rated_error = nil
+    @has_watch_logs = false
+
+    watched_tmdb_ids = []
+
+    if user_signed_in?
+      watch_history = current_user.watch_history
+      if watch_history&.watch_logs&.exists?
+        @has_watch_logs = true
+        watch_logs = watch_history.watch_logs.includes(:movie).order(watched_on: :desc)
+        watched_tmdb_ids = watch_logs.map { |wl| wl.movie&.tmdb_id }.compact.uniq
+        recent_movies = watch_logs.limit(3).map(&:movie).compact
+
+        rec_pool = []
+        recent_movies.each do |movie|
+          next unless movie.tmdb_id
+          similar_data = @tmdb_service.similar_movies(movie.tmdb_id)
+          if similar_data["results"]
+            rec_pool.concat(similar_data["results"])
+          elsif similar_data["error"]
+            @recommendations_error ||= similar_data["error"]
+          end
+        end
+
+        rec_pool.reject! { |movie| watched_tmdb_ids.include?(movie["id"]) }
+        @recommendations = rec_pool.uniq { |movie| movie["id"] }.first(12)
+        sync_movies_to_db(@recommendations) if @recommendations.any?
+      end
+    end
+
+    trending_data = @tmdb_service.trending_movies || {}
+    if trending_data["results"].present?
+      @trending_movies = trending_data["results"]
+      sync_movies_to_db(@trending_movies)
+    else
+      @trending_error = trending_data["error"] || "Unable to load trending movies right now."
+    end
+
+    top_rated_data = @tmdb_service.top_rated_movies || {}
+    if top_rated_data["results"].present?
+      filtered = top_rated_data["results"].select { |movie| (movie["vote_average"] || 0) >= 7.5 }
+      filtered = filtered.reject { |movie| watched_tmdb_ids.include?(movie["id"]) }
+      @high_rated_unwatched = filtered.first(12)
+      sync_movies_to_db(@high_rated_unwatched)
+    else
+      @high_rated_error = top_rated_data["error"] || "Unable to load top rated movies right now."
+    end
+  end
+
   def apply_filters(movies)
     filtered = movies
 
@@ -126,17 +168,17 @@ class MoviesController < ApplicationController
 
     # Filter by decade
     if @decade_filter.present?
-        filtered = filtered.select do |movie_data|
-          release_date = movie_data["release_date"]
-          next false unless release_date
-          begin
-            year = Date.parse(release_date).year
-          rescue ArgumentError, TypeError
-            next false
-          end
-          next false unless year
-          (year / 10) * 10 == @decade_filter
+      filtered = filtered.select do |movie_data|
+        release_date = movie_data["release_date"]
+        next false unless release_date
+        begin
+          year = Date.parse(release_date).year
+        rescue ArgumentError, TypeError
+          next false
         end
+        next false unless year
+        (year / 10) * 10 == @decade_filter
+      end
     end
 
     filtered
@@ -170,6 +212,49 @@ class MoviesController < ApplicationController
     return true unless movie.cached?
     # Only refresh if the record is skeletal (missing all core detail fields).
     movie.runtime.blank? && movie.genres.empty? && movie.movie_people.empty?
+  end
+
+  # Fetch enough TMDB pages to build a consistent paginated, filtered list.
+  # We accumulate up to the current page's window, then slice after global sorting.
+  def filtered_results(search_results)
+    per_page = 10
+    target_page = @page
+    offset = (target_page - 1) * per_page
+
+    combined = []
+    current_page = 1
+    total_pages_from_api = nil
+    total_results_from_api = nil
+
+    loop do
+      page_data =
+        if current_page == @page
+          search_results
+        else
+          @tmdb_service.search_movies(@query, page: current_page)
+        end
+
+      break unless page_data.is_a?(Hash)
+
+      batch = page_data["results"] || page_data[:results] || []
+      total_pages_from_api ||= page_data["total_pages"] || page_data[:total_pages]
+      total_results_from_api ||= page_data["total_results"] || page_data[:total_results]
+
+      combined.concat(apply_filters(batch))
+
+      break if combined.size >= offset + per_page
+      break if batch.empty?
+      break if total_pages_from_api && current_page >= total_pages_from_api
+
+      current_page += 1
+    end
+
+    sorted = apply_sorting(combined)
+    paged = sorted.slice(offset, per_page) || []
+    has_more = (sorted.size > offset + per_page) || (total_pages_from_api && current_page < total_pages_from_api)
+    total_results = total_results_from_api || sorted.size
+
+    [ paged, has_more, total_results ]
   end
 
   def sync_movies_to_db(movies_data)

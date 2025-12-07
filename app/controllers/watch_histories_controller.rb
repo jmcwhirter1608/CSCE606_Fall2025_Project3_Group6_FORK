@@ -52,29 +52,38 @@ class WatchHistoriesController < ApplicationController
   end
 
   def create
-    # Prefer an explicit TMDB id if provided, otherwise accept a local movie id
-    search_param = params[:tmdb_id].presence || params[:movie_id]
+    movie = nil
 
-    movie = Movie.find_by(tmdb_id: search_param) || Movie.find_by(id: search_param)
-
-    # If a tmdb_id was provided and no local movie exists, try fetching from TMDB
-    if movie.nil? && params[:tmdb_id].present?
-      tmdb = TmdbService.new.movie_details(params[:tmdb_id])
-      movie = Movie.find_or_create_from_tmdb(tmdb) if tmdb
+    if params[:tmdb_id].present?
+      movie = Movie.find_by(tmdb_id: params[:tmdb_id])
+      if movie.nil?
+        tmdb = TmdbService.new.movie_details(params[:tmdb_id])
+        movie = Movie.find_or_create_from_tmdb(tmdb) if tmdb
+      end
+    elsif params[:movie_id].present?
+      # When we get a local movie id from the form, look it up by primary key first
+      movie = Movie.find_by(id: params[:movie_id]) || Movie.find_by(tmdb_id: params[:movie_id])
     end
 
     unless movie
       redirect_back fallback_location: root_path, alert: "Movie not found" and return
     end
 
+    ensure_movie_runtime(movie)
+
     watched_on = params[:watched_on].presence || Date.current
+    rating_param = params[:rating].presence
+    rating_value = rating_param.to_i if rating_param.present? && rating_param.to_i.between?(1, 10)
 
     watch_history = current_user.watch_history || current_user.create_watch_history
 
     @watch_log = watch_history.watch_logs.new(movie: movie, watched_on: watched_on)
+    @watch_log.incoming_rating = rating_value if rating_value
 
     if @watch_log.save
-      redirect_back fallback_location: movie_path(movie), notice: "Logged as watched on #{watched_on}"
+      notice_msg = "Logged as watched on #{watched_on}"
+      notice_msg += " with rating #{rating_value}" if rating_value
+      redirect_back fallback_location: movie_path(movie), notice: notice_msg
     else
       redirect_back fallback_location: movie_path(movie), alert: @watch_log.errors.full_messages.to_sentence
     end
@@ -89,5 +98,36 @@ class WatchHistoriesController < ApplicationController
     else
       redirect_to watch_histories_path, alert: "Watch history entry not found"
     end
+  end
+
+  private
+
+  def ensure_movie_runtime(movie)
+    return unless movie&.runtime.blank? && movie.tmdb_id.present?
+
+    cache_key = "movie_runtime_#{movie.tmdb_id}"
+    cached = Rails.cache.read(cache_key)
+    return if cached == :missing
+    if cached.is_a?(Integer) && cached.positive?
+      movie.update(runtime: cached, cached_at: Time.current) if movie.runtime != cached
+      return
+    end
+
+    tmdb = tmdb_service.movie_details(movie.tmdb_id)
+    runtime_val = tmdb.is_a?(Hash) ? tmdb["runtime"] || tmdb[:runtime] : nil
+    unless runtime_val.present? && runtime_val.to_i > 0
+      Rails.cache.write(cache_key, :missing, expires_in: 6.hours)
+      return
+    end
+
+    runtime_int = runtime_val.to_i
+    Rails.cache.write(cache_key, runtime_int, expires_in: 24.hours)
+    movie.update(runtime: runtime_int, cached_at: Time.current)
+  rescue StandardError => e
+    Rails.logger.error("WatchHistoriesController#ensure_movie_runtime error: #{e.message}")
+  end
+
+  def tmdb_service
+    @tmdb_service ||= TmdbService.new
   end
 end
