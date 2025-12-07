@@ -13,7 +13,7 @@
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         <div class="md:col-span-1">
-          <% if @movie.poster_path %>
+          <% if @movie.poster_path.present? %>
             <%= image_tag @movie.poster_url, 
                 alt: @movie.title, 
                 class: "w-full rounded-lg shadow-lg",
@@ -194,7 +194,7 @@
               <div class="group relative">
                 <%= link_to movie_path(movie['id']), class: 'group block focus:outline-none focus-visible:ring-2 focus-visible:ring-cinematico-gold rounded-lg' do %>
                   <div class="relative overflow-hidden rounded-lg bg-cinematico-dark border border-cinematico-grey hover:border-cinematico-gold transition-all duration-300">
-                    <% if movie['poster_path'] %>
+                    <% if movie['poster_path'].present? %>
                       <%= image_tag TmdbService.poster_url(movie['poster_path']), 
                           alt: movie['title'], 
                           class: 'w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300',
