@@ -13,8 +13,9 @@
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         <div class="md:col-span-1">
-          <% if @movie.poster_path.present? %>
-            <%= image_tag @movie.poster_url, 
+          <% poster_url = @movie.poster_url %>
+          <% if poster_url.present? && @movie.poster_path.present? %>
+            <%= image_tag poster_url, 
                 alt: @movie.title, 
                 class: "w-full rounded-lg shadow-lg",
                 onerror: "this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'300\\' height=\\'450\\'%3E%3Crect fill=\\'%23333\\' width=\\'300\\' height=\\'450\\'/%3E%3Ctext fill=\\'%23999\\' font-family=\\'Arial\\' font-size=\\'18\\' x=\\'50%25\\' y=\\'50%25\\' text-anchor=\\'middle\\' dominant-baseline=\\'middle\\'%3ENo Poster%3C/text%3E%3C/svg%3E'" %>
