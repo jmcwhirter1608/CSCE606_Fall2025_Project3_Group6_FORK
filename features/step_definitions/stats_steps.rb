@@ -65,16 +65,16 @@ end
 Given("I have logged movies with different genres and directors") do
   genre1 = FactoryBot.create(:genre, name: "Action")
   genre2 = FactoryBot.create(:genre, name: "Comedy")
-  
+
   movie1 = FactoryBot.create(:movie, title: "Action Movie", release_date: Date.today - 1.year)
   movie2 = FactoryBot.create(:movie, title: "Comedy Movie", release_date: Date.today - 1.year)
-  
+
   FactoryBot.create(:movie_genre, movie: movie1, genre: genre1)
   FactoryBot.create(:movie_genre, movie: movie2, genre: genre2)
-  
+
   director = FactoryBot.create(:person, name: "Director Name")
   FactoryBot.create(:movie_person, movie: movie1, person: director, role: "director")
-  
+
   watch_history = @user.watch_history || FactoryBot.create(:watch_history, user: @user)
   FactoryBot.create(:watch_log, movie: movie1, watch_history: watch_history, watched_on: Date.today)
   FactoryBot.create(:watch_log, movie: movie2, watch_history: watch_history, watched_on: Date.today - 1.day)
@@ -165,7 +165,7 @@ end
 
 Then("active days should be highlighted") do
   # Check for heatmap container or heatmap elements
-  has_heatmap = page.has_css?(".heatmap-container", wait: 5) || 
+  has_heatmap = page.has_css?(".heatmap-container", wait: 5) ||
                 page.has_css?("#heatmap", wait: 5) ||
                 page.has_css?("[id*='heatmap']", wait: 5)
   expect(has_heatmap).to be true
@@ -194,7 +194,7 @@ end
 
 Then("today should be highlighted in the heatmap") do
   # Check for heatmap container - today should be highlighted if there's activity
-  has_heatmap = page.has_css?(".heatmap-container", wait: 5) || 
+  has_heatmap = page.has_css?(".heatmap-container", wait: 5) ||
                 page.has_css?("#heatmap", wait: 5) ||
                 page.has_content?(/heatmap|activity/i, wait: 5)
   expect(has_heatmap).to be true
@@ -203,13 +203,13 @@ end
 Given("I have logged movies with different genres") do
   genre1 = FactoryBot.create(:genre, name: "Action")
   genre2 = FactoryBot.create(:genre, name: "Comedy")
-  
+
   movie1 = FactoryBot.create(:movie, title: "Action Movie", release_date: Date.today - 1.year)
   movie2 = FactoryBot.create(:movie, title: "Comedy Movie", release_date: Date.today - 1.year)
-  
+
   FactoryBot.create(:movie_genre, movie: movie1, genre: genre1)
   FactoryBot.create(:movie_genre, movie: movie2, genre: genre2)
-  
+
   watch_history = @user.watch_history || FactoryBot.create(:watch_history, user: @user)
   FactoryBot.create(:watch_log, movie: movie1, watch_history: watch_history, watched_on: Date.today)
   FactoryBot.create(:watch_log, movie: movie2, watch_history: watch_history, watched_on: Date.today - 1.day)

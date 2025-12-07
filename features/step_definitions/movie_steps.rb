@@ -21,13 +21,13 @@ Then("I should see search results") do
   # Results can appear in .grid or as movie links, or show "Found X results"
   # Also check if we're still on the search page (query parameter present)
   expect(current_path).to match(/movies/)
-  
+
   # Check for various indicators of search results
   has_grid = page.has_css?(".grid", wait: 10)
   has_movies = page.has_css?("a[href*='/movies/']", wait: 10)
   has_found_text = page.has_content?(/found|results/i, wait: 10)
   has_movie_cards = page.has_css?("[class*='movie'], [class*='card']", wait: 10)
-  
+
   expect(has_grid || has_movies || has_found_text || has_movie_cards).to be true
 end
 
@@ -164,7 +164,7 @@ Given("the TMDb API is available") do
 
   stub_request(:get, /api\.themoviedb\.org\/3\/genre\/movie\/list/)
     .to_return(status: 200, body: genres_response.to_json, headers: { "Content-Type" => "application/json" })
-  
+
   # Also stub without query parameters
   stub_request(:get, /api\.themoviedb\.org\/3\/genre\/movie\/list$/)
     .to_return(status: 200, body: genres_response.to_json, headers: { "Content-Type" => "application/json" })

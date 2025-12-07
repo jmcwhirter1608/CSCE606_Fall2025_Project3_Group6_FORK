@@ -98,7 +98,7 @@ When("I click {string}") do |button_text|
   # Try both button and link, whichever is available
   has_button = page.has_button?(button_text, wait: 10)
   has_link = page.has_link?(button_text, wait: 10)
-  
+
   if has_button
     click_button button_text
   elsif has_link
@@ -241,7 +241,7 @@ Given("{string} has a public list with movies") do |username|
   list = FactoryBot.create(:list, user: user, name: "Movies List", public: true)
   movie = FactoryBot.create(:movie, title: "Test Movie", release_date: Date.today - 1.year, tmdb_id: 99999)
   FactoryBot.create(:list_item, list: list, movie: movie)
-  
+
   # Stub TMDb API for movie details and similar movies (needed when visitor clicks movie)
   stub_request(:get, /api\.themoviedb\.org\/3\/movie\/99999/)
     .with(query: hash_including({}))
@@ -255,7 +255,7 @@ Given("{string} has a public list with movies") do |username|
       "genres" => [],
       "credits" => { "cast" => [], "crew" => [] }
     }.to_json, headers: { "Content-Type" => "application/json" })
-  
+
   stub_request(:get, /api\.themoviedb\.org\/3\/movie\/99999\/similar/)
     .with(query: hash_including({}))
     .to_return(status: 200, body: { "results" => [], "page" => 1, "total_pages" => 0, "total_results" => 0 }.to_json, headers: { "Content-Type" => "application/json" })
