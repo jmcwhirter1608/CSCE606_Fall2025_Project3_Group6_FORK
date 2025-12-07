@@ -249,10 +249,15 @@ end
 
 Then("I should see a placeholder for the poster") do
   # Check for placeholder text "No Poster Available" or "No Poster"
-  # Also check if there's a div with placeholder text
-  has_placeholder = page.has_content?(/no poster|poster available/i, wait: 10)
-  has_placeholder_div = page.has_css?("div:contains('No Poster')", wait: 5) rescue false
-  expect(has_placeholder || has_placeholder_div).to be true
+  # The placeholder can appear as:
+  # 1. Text "No Poster Available" in a span
+  # 2. SVG with "No Poster" text (from onerror handler)
+  # 3. Any div containing placeholder text
+  has_text = page.has_content?(/no poster available|no poster/i, wait: 10)
+  has_span = page.has_css?("span", text: /no poster/i, wait: 5)
+  has_div = page.has_css?("div", text: /no poster/i, wait: 5)
+
+  expect(has_text || has_span || has_div).to be true
 end
 
 Given("I have previously viewed movie {string}") do |tmdb_id|
