@@ -35,7 +35,7 @@ Given("I have watched movies with tmdb ids {int} and {int}") do |id1, id2|
   @user ||= FactoryBot.create(:user)
   watch_history = @user.watch_history || FactoryBot.create(:watch_history, user: @user)
 
-  [id1, id2].each_with_index do |tmdb_id, idx|
+  [ id1, id2 ].each_with_index do |tmdb_id, idx|
     movie = FactoryBot.create(:movie, tmdb_id: tmdb_id, title: "Watched #{idx}", cached_at: Time.current)
     FactoryBot.create(:watch_log, watch_history: watch_history, movie: movie, watched_on: Date.today - idx.days)
 
