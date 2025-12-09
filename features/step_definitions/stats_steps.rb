@@ -277,11 +277,11 @@ Given("I have logged movies in different months of current year") do
   @movie1 = FactoryBot.create(:movie, title: "Jan Movie", release_date: Date.today - 1.year, runtime: 120)
   @movie2 = FactoryBot.create(:movie, title: "Feb Movie", release_date: Date.today - 1.year, runtime: 100)
   @movie3 = FactoryBot.create(:movie, title: "Jun Movie", release_date: Date.today - 1.year, runtime: 110)
-  
+
   FactoryBot.create(:watch_log, movie: @movie1, watch_history: watch_history, watched_on: Date.new(Date.current.year, 1, 15))
   FactoryBot.create(:watch_log, movie: @movie2, watch_history: watch_history, watched_on: Date.new(Date.current.year, 2, 20))
   FactoryBot.create(:watch_log, movie: @movie3, watch_history: watch_history, watched_on: Date.new(Date.current.year, 6, 10))
-  
+
   # Create matching logs with ratings
   FactoryBot.create(:log, user: @user, movie: @movie1, watched_on: Date.new(Date.current.year, 1, 15), rating: 4.5)
   FactoryBot.create(:log, user: @user, movie: @movie2, watched_on: Date.new(Date.current.year, 2, 20), rating: 5.0)
@@ -354,7 +354,7 @@ end
 
 Then("all dates in year should be present in heatmap") do
   start_date = Date.new(Date.current.year, 1, 1)
-  end_date = [Date.new(Date.current.year, 12, 31), Date.today].min
+  end_date = [ Date.new(Date.current.year, 12, 31), Date.today ].min
   expected_count = (end_date - start_date).to_i + 1
   expect(@heatmap_data.keys.length).to eq(expected_count)
 end
@@ -374,7 +374,7 @@ When("I get heatmap years") do
     @heatmap_years = service.heatmap_years
   rescue StandardError => e
     Rails.logger.error("Error getting heatmap years: #{e.message}")
-    @heatmap_years = [Date.current.year]
+    @heatmap_years = [ Date.current.year ]
   end
 end
 
@@ -406,12 +406,12 @@ Given("I have logged movies with multiple genres each") do
   genre1 = FactoryBot.create(:genre, name: "Action")
   genre2 = FactoryBot.create(:genre, name: "Comedy")
   genre3 = FactoryBot.create(:genre, name: "Drama")
-  
+
   movie = FactoryBot.create(:movie, title: "Multi-Genre Movie", release_date: Date.today - 1.year, runtime: 120)
   FactoryBot.create(:movie_genre, movie: movie, genre: genre1)
   FactoryBot.create(:movie_genre, movie: movie, genre: genre2)
   FactoryBot.create(:movie_genre, movie: movie, genre: genre3)
-  
+
   watch_history = @user.watch_history || FactoryBot.create(:watch_history, user: @user)
   FactoryBot.create(:watch_log, movie: movie, watch_history: watch_history, watched_on: Date.today)
 end
@@ -430,12 +430,12 @@ end
 
 Given("I have logged movies from different decades") do
   watch_history = @user.watch_history || FactoryBot.create(:watch_history, user: @user)
-  
+
   movie1 = FactoryBot.create(:movie, title: "80s Movie", release_date: Date.new(1985, 6, 15), runtime: 100)
   movie2 = FactoryBot.create(:movie, title: "90s Movie", release_date: Date.new(1995, 8, 20), runtime: 110)
   movie3 = FactoryBot.create(:movie, title: "2000s Movie", release_date: Date.new(2005, 3, 10), runtime: 120)
   movie4 = FactoryBot.create(:movie, title: "2010s Movie", release_date: Date.new(2015, 11, 5), runtime: 105)
-  
+
   FactoryBot.create(:watch_log, movie: movie1, watch_history: watch_history, watched_on: Date.today - 3.days)
   FactoryBot.create(:watch_log, movie: movie2, watch_history: watch_history, watched_on: Date.today - 2.days)
   FactoryBot.create(:watch_log, movie: movie3, watch_history: watch_history, watched_on: Date.today - 1.day)
@@ -452,11 +452,11 @@ end
 
 Given("I have logged movies with invalid release dates") do
   watch_history = @user.watch_history || FactoryBot.create(:watch_history, user: @user)
-  
+
   # Movie with nil release_date
   movie1 = FactoryBot.create(:movie, title: "No Date Movie", release_date: nil, runtime: 100)
   FactoryBot.create(:watch_log, movie: movie1, watch_history: watch_history, watched_on: Date.today)
-  
+
   # Movie with valid date for comparison
   movie2 = FactoryBot.create(:movie, title: "Valid Movie", release_date: Date.new(2020, 5, 10), runtime: 110)
   FactoryBot.create(:watch_log, movie: movie2, watch_history: watch_history, watched_on: Date.today - 1.day)
@@ -472,21 +472,21 @@ end
 Given("I have logged movies with cast and crew") do
   genre1 = FactoryBot.create(:genre, name: "Action")
   genre2 = FactoryBot.create(:genre, name: "Thriller")
-  
+
   movie1 = FactoryBot.create(:movie, title: "Movie A", release_date: Date.today - 1.year, runtime: 120)
   movie2 = FactoryBot.create(:movie, title: "Movie B", release_date: Date.today - 1.year, runtime: 100)
-  
+
   FactoryBot.create(:movie_genre, movie: movie1, genre: genre1)
   FactoryBot.create(:movie_genre, movie: movie2, genre: genre2)
-  
+
   director1 = FactoryBot.create(:person, name: "Famous Director", profile_path: "/director.jpg")
   actor1 = FactoryBot.create(:person, name: "Star Actor", profile_path: "/actor.jpg")
   actor2 = FactoryBot.create(:person, name: "Supporting Actor", profile_path: "/actor2.jpg")
-  
+
   FactoryBot.create(:movie_person, movie: movie1, person: director1, role: "director")
   FactoryBot.create(:movie_person, movie: movie1, person: actor1, role: "cast")
   FactoryBot.create(:movie_person, movie: movie2, person: actor2, role: "cast")
-  
+
   watch_history = @user.watch_history || FactoryBot.create(:watch_history, user: @user)
   FactoryBot.create(:watch_log, movie: movie1, watch_history: watch_history, watched_on: Date.today)
   FactoryBot.create(:watch_log, movie: movie2, watch_history: watch_history, watched_on: Date.today - 1.day)
@@ -541,7 +541,7 @@ Given("I have a movie without runtime and valid tmdb id") do
   @movie = FactoryBot.create(:movie, title: "No Runtime Movie", release_date: Date.today - 1.year, runtime: nil, tmdb_id: 550)
   watch_history = @user.watch_history || FactoryBot.create(:watch_history, user: @user)
   FactoryBot.create(:watch_log, movie: @movie, watch_history: watch_history, watched_on: Date.today)
-  
+
   # Stub TMDB API request
   stub_request(:get, "https://api.themoviedb.org/3/movie/#{@movie.tmdb_id}?append_to_response=credits,videos")
     .to_return(status: 200, body: { runtime: 139 }.to_json, headers: { 'Content-Type' => 'application/json' })
@@ -571,7 +571,7 @@ When("I calculate total hours twice") do
   # Stub TMDB API request and count calls
   @tmdb_stub = stub_request(:get, "https://api.themoviedb.org/3/movie/#{@movie.tmdb_id}?append_to_response=credits,videos")
     .to_return(status: 200, body: { runtime: 120 }.to_json, headers: { 'Content-Type' => 'application/json' })
-  
+
   service = StatsService.new(@user)
   # First call
   service.calculate_overview
@@ -589,7 +589,7 @@ Given("I have a movie with no runtime and TMDB returns nothing") do
   @movie = FactoryBot.create(:movie, title: "TMDB Missing Movie", release_date: Date.today - 1.year, runtime: nil, tmdb_id: 999999)
   watch_history = @user.watch_history || FactoryBot.create(:watch_history, user: @user)
   FactoryBot.create(:watch_log, movie: @movie, watch_history: watch_history, watched_on: Date.today)
-  
+
   # Stub TMDB to return no runtime
   stub_request(:get, "https://api.themoviedb.org/3/movie/#{@movie.tmdb_id}?append_to_response=credits,videos")
     .to_return(status: 200, body: { runtime: nil }.to_json, headers: { 'Content-Type' => 'application/json' })
@@ -654,19 +654,19 @@ end
 
 Given("I have logged movies with ratings in different months") do
   watch_history = @user.watch_history || FactoryBot.create(:watch_history, user: @user)
-  
+
   @movie1 = FactoryBot.create(:movie, title: "Jan Movie", release_date: Date.today - 1.year, runtime: 100)
   @movie2 = FactoryBot.create(:movie, title: "Jan Movie 2", release_date: Date.today - 1.year, runtime: 100)
   @movie3 = FactoryBot.create(:movie, title: "Feb Movie", release_date: Date.today - 1.year, runtime: 110)
-  
+
   jan_date1 = Date.new(Date.current.year, 1, 10)
   jan_date2 = Date.new(Date.current.year, 1, 20)
   feb_date = Date.new(Date.current.year, 2, 15)
-  
+
   FactoryBot.create(:watch_log, movie: @movie1, watch_history: watch_history, watched_on: jan_date1)
   FactoryBot.create(:watch_log, movie: @movie2, watch_history: watch_history, watched_on: jan_date2)
   FactoryBot.create(:watch_log, movie: @movie3, watch_history: watch_history, watched_on: feb_date)
-  
+
   FactoryBot.create(:log, user: @user, movie: @movie1, watched_on: jan_date1, rating: 4.0)
   FactoryBot.create(:log, user: @user, movie: @movie2, watched_on: jan_date2, rating: 5.0)
   FactoryBot.create(:log, user: @user, movie: @movie3, watched_on: feb_date, rating: 3.0)
@@ -675,7 +675,7 @@ end
 Then("rating trend should show correct monthly averages") do
   jan_rating = @trend_data[:rating_trend].find { |m| m[:month] == Date.new(Date.current.year, 1, 1).strftime("%Y-%m") }
   feb_rating = @trend_data[:rating_trend].find { |m| m[:month] == Date.new(Date.current.year, 2, 1).strftime("%Y-%m") }
-  
+
   # January average should be (4.0 + 5.0) / 2 = 4.5
   expect(jan_rating[:average_rating]).to eq(4.5)
   # February average should be 3.0

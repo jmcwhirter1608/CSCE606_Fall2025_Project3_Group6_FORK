@@ -22,9 +22,9 @@ RSpec.describe ListsController, type: :controller do
         create(:list, user: other_user)
 
         get :index
-        
+
         expect(response).to have_http_status(:success)
-        expect(assigns(:lists)).to match_array([list1, list2])
+        expect(assigns(:lists)).to match_array([ list1, list2 ])
       end
     end
 

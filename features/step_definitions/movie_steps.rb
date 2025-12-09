@@ -420,10 +420,10 @@ Given("I have searched for {string}") do |query|
   # Ensure genres exist before searching
   Genre.find_or_create_by!(tmdb_id: 28, name: "Action")
   Genre.find_or_create_by!(tmdb_id: 878, name: "Science Fiction")
-  
+
   # Clear any cached genres from TMDb service
   Rails.cache.delete("tmdb_genres")
-  
+
   visit movies_path
   expect(page).to have_css("input[name='query']", wait: 10)
   find("input[name='query']").set(query)
@@ -644,6 +644,6 @@ When("I search for movies with invalid release dates sorted by {string}") do |so
       "total_pages" => 1,
       "total_results" => 3
     }.to_json, headers: { "Content-Type" => "application/json" })
-  
+
   visit movies_path(query: "test", sort_by: sort_by)
 end
