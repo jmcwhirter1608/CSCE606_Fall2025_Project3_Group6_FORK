@@ -38,3 +38,8 @@
 
 coverage
 PR_DESCRIPTION.md
+
+/config/master.key
+
+# Kamal secrets
+.kamal/secrets
