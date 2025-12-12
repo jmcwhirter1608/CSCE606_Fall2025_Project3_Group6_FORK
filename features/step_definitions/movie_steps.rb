@@ -193,6 +193,16 @@ Given("the TMDb API is available") do
   stub_request(:get, /api\.themoviedb\.org\/3\/movie\/top_rated/)
     .to_return(status: 200, body: top_rated_response.to_json, headers: { "Content-Type" => "application/json" })
 
+  discover_response = {
+    "results" => [],
+    "page" => 1,
+    "total_pages" => 1,
+    "total_results" => 1234567
+  }
+
+  stub_request(:get, /api\.themoviedb\.org\/3\/discover\/movie/)
+    .to_return(status: 200, body: discover_response.to_json, headers: { "Content-Type" => "application/json" })
+
   # Create genres in the database for filter dropdowns
   Genre.find_or_create_by!(tmdb_id: 28, name: "Action")
   Genre.find_or_create_by!(tmdb_id: 878, name: "Science Fiction")
@@ -646,4 +656,13 @@ When("I search for movies with invalid release dates sorted by {string}") do |so
     }.to_json, headers: { "Content-Type" => "application/json" })
 
   visit movies_path(query: "test", sort_by: sort_by)
+end
+
+Then("I should see the {string} card") do |card_title|
+  expect(page).to have_content(card_title, wait: 10)
+end
+
+Then("the total movies count should be displayed in formatted format") do
+  expect(page).to have_css("h1", text: "Total Movies and Counting", wait: 10)
+  expect(page).to have_content(/\d{1,3}(,\d{3})*/, wait: 10)
 end

@@ -1,5 +1,15 @@
 <div class="min-h-screen app-shell pt-20 px-6 pb-12">
   <div class="max-w-7xl mx-auto relative z-10 space-y-8">
+    <!-- Total Movies Count Card -->
+    <% if @total_movies_count %>
+      <div class="section-surface p-8 md:p-10">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h1 class="font-cinzel text-4xl text-cinematico-gold">Total Movies and Counting</h1>
+          <span class="font-cinzel text-4xl text-cinematico-gold"><%= number_with_delimiter(@total_movies_count) %></span>
+        </div>
+      </div>
+    <% end %>
+
     <!-- Search Section -->
     <div class="section-surface p-8 md:p-10">
       <h1 class="font-cinzel text-4xl text-cinematico-gold mb-6">Search Movies</h1>

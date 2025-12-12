@@ -196,6 +196,41 @@ class TmdbService
     end
   end
 
+  def total_movies_count
+    cache_key = "tmdb_total_movies_count"
+    cached = Rails.cache.read(cache_key)
+
+    return cached if cached.present?
+
+    begin
+      response = authorized_get(
+        "discover/movie",
+        params: { page: 1 },
+        log_context: "total_count"
+      )
+
+      if response.status == 429
+        return cached if cached.present?
+        return nil
+      end
+
+      if response.success?
+        data = response.body
+        total_results = data["total_results"] || data[:total_results] || nil
+        if total_results
+          Rails.cache.write(cache_key, total_results, expires_in: 24.hours)
+        end
+        total_results
+      else
+        cached.presence || nil
+      end
+    rescue Faraday::TimeoutError, Faraday::ConnectionFailed
+      cached.presence || nil
+    rescue StandardError
+      cached.presence || nil
+    end
+  end
+
   # Returns TMDb poster URL if poster_path is present, nil otherwise
   # Note: This method returns nil for blank values - callers should use helper methods
   # that provide fallback to placeholder (e.g., Movie#poster_url or ApplicationHelper#poster_url_for)

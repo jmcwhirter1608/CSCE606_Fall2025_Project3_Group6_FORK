@@ -41,6 +41,8 @@ class MoviesController < ApplicationController
     # Handle both string and symbol keys, and ensure it's an array
     @genres = genres_data["genres"] || genres_data[:genres] || []
     @genres = [] unless @genres.is_a?(Array)
+
+    @total_movies_count = @tmdb_service.total_movies_count
   end
 
   def show

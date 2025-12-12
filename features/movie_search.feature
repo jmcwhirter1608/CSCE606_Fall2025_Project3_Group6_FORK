@@ -51,3 +51,8 @@ Feature: Search Movies
     Given I am on the movies search page
     When I search for movies with invalid release dates sorted by "release_date"
     Then I should see search results
+
+  Scenario: Total movies count card is displayed
+    Given I am on the movies search page
+    Then I should see the "Total Movies and Counting" card
+    And the total movies count should be displayed in formatted format
